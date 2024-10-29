@@ -111,9 +111,7 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [project.entry-points.'nomad.plugin']
-
-
-extended_tabular = "nomad_tabular_parser_extended.normalizers:extended_tabular"
+extended_tabular = "nomad_tabular_parser_extended.normalizers:tabular_normalizer"
 
 
 [tool.cruft]

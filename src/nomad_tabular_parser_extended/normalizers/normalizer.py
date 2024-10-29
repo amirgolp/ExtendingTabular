@@ -2,6 +2,9 @@ from typing import (
     TYPE_CHECKING,
 )
 
+from nomad.metainfo import Section, Quantity
+from nomad.parsing.tabular import TableData
+
 if TYPE_CHECKING:
     from nomad.datamodel.datamodel import (
         EntryArchive,
@@ -18,9 +21,33 @@ configuration = config.get_plugin_entry_point(
 )
 
 
-class NewNormalizer(Normalizer):
-    def normalize(self, archive: 'EntryArchive', logger: 'BoundLogger') -> None:
-        super().normalize(archive, logger)
-        logger.info('NewNormalizer.normalize', parameter=configuration.parameter)
-        if archive.results and archive.results.material:
-            archive.results.material.elements = ['C', 'O']
+class TestTabularPlugin(TableData, Normalizer):
+    m_def = Section(
+        extends_base_section=True,
+        more={
+            "label_quantity": "short_name"
+        }
+    )
+    data_file = Quantity(
+        type=str,
+        a_tabular_parser=dict(
+            parsing_options=dict(comment='#'),
+            mapping_options=[
+                dict(mapping_mode='column', file_mode='current_entry', section=['#root'])
+            ]
+        ),
+        a_browser={
+            "adaptor": "RawFileAdaptor"
+        },
+        a_eln={
+            "component": "FileEditQuantity"
+        },
+        default="test.csv",
+    )
+    short_name = Quantity(type=str, a_tabular=dict(name='header_1'))
+    test_name = Quantity(type=str)
+
+    def normalize(self, archive: EntryArchive, logger: BoundLogger):
+        super(TestTabularPlugin, self).normalize(archive, logger)
+
+        self.test_name = "this is written inside TestTabularPlugin normalizer"
